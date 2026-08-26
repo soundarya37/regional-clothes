@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rebozo Decoder — Wrapped Cloth, Two Countries</title>
+<style>
+  :root {
+    --bg: #EDEAE0;
+    --ink: #262A24;
+    --indigo: #33415C;
+    --cochineal: #8C3B3B;
+    --thread: #6E7B5C;
+    --muted: #7C7869;
+    --card-bg: #F6F4EC;
+    --line: #D9D4C4;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    min-height: 100vh;
+    padding: 48px 24px 80px;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  header {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--thread);
+    margin: 0 0 12px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: clamp(30px, 4.6vw, 46px);
+    line-height: 1.1;
+    margin: 0 0 14px;
+    letter-spacing: -0.01em;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--cochineal);
+  }
+
+  .sub {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  nav.regions {
+    display: flex;
+    gap: 8px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+
+  .region-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    padding: 9px 16px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+    background: var(--card-bg);
+    color: var(--ink);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+
+  .region-btn:hover { border-color: var(--thread); }
+
+  .region-btn.active {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+
+  .region-btn:focus-visible {
+    outline: 2px solid var(--thread);
+    outline-offset: 2px;
+  }
+
+  main.stage {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  @media (max-width: 760px) {
+    main.stage { grid-template-columns: 1fr; }
+  }
+
+  .visual-panel {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 24px;
+  }
+
+  .visual-panel svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .step-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+  }
+
+  .step-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+    padding: 7px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+
+  .step-btn:hover { border-color: var(--thread); }
+  .step-btn:disabled { opacity: 0.35; cursor: default; }
+  .step-btn:focus-visible { outline: 2px solid var(--thread); outline-offset: 2px; }
+
+  .step-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--line);
+  }
+
+  .dot.active { background: var(--cochineal); }
+
+  .step-caption {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  .view-toggle {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .view-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--line);
+    background: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .view-btn.active {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+
+  .view-btn:hover { color: var(--ink); }
+  .view-btn:focus-visible { outline: 2px solid var(--thread); outline-offset: 2px; }
+
+  .dress-caption {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    margin-top: 16px;
+  }
+
+  .dress-name {
+    font-family: 'Fraunces', Georgia, serif;
+    font-size: 18px;
+    margin: 0 0 8px;
+    color: var(--indigo);
+  }
+
+  .info-panel h2 {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-size: 26px;
+    margin: 0 0 4px;
+  }
+
+  .info-panel .place {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--indigo);
+    margin: 0 0 20px;
+  }
+
+  .info-panel p {
+    font-size: 14.5px;
+    line-height: 1.7;
+    margin: 0 0 16px;
+  }
+
+  .info-panel .label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--thread);
+    display: block;
+    margin: 22px 0 6px;
+  }
+
+  .swatch-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .thread-path { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">A field guide to wrapped cloth, Mexico &amp; Tamil Nadu</p>
+    <h1>One length of cloth, <em>five ways to wear it.</em></h1>
+    <p class="sub">A rebozo and a saree are both, at heart, a single uncut length of woven cloth — no seams, no darts — shaped entirely by how it's folded, tucked, and knotted. Four regional Mexican rebozos, and one Tamil Nadu saree drape, step through the same idea in two textile traditions.</p>
+    <nav class="regions" id="regions"></nav>
+  </header>
+
+  <main class="stage">
+    <div class="visual-panel">
+      <div class="view-toggle" id="view-toggle">
+        <button class="view-btn active" data-view="wrap" id="btn-view-wrap">The Wrap</button>
+        <button class="view-btn" data-view="dress" id="btn-view-dress">The Dress</button>
+      </div>
+      <svg id="wrap-svg" viewBox="0 0 340 420" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="step-controls" id="step-controls">
+        <button class="step-btn" id="prev-step">← Prev</button>
+        <div class="step-dots" id="step-dots"></div>
+        <button class="step-btn" id="next-step">Next →</button>
+      </div>
+      <p class="step-caption" id="step-caption"></p>
+      <div class="dress-caption" id="dress-caption" style="display:none;"></div>
+    </div>
+
+    <div class="info-panel" id="info-panel"></div>
+  </main>
+
+  <footer>
+    5 regions · rebozo traditions of Mexico &amp; the madisar saree of Tamil Nadu
+  </footer>
+
+</div>
+
+<script>
+const REGIONS = [
+  {
+    id: 'tenancingo',
+    name: 'Tenancingo',
+    place: 'State of Mexico',
+    threadColor: '#33415C',
+    swatches: ['#33415C', '#EDEAE0', '#262A24'],
+    intro: "Tenancingo's rebozos are known above all for their punta — the fringe. Weavers hand-knot the loose warp threads into intricate macramé patterns that can take longer than the weaving itself.",
+    context: "A fine Tenancingo rebozo, worn draped over both shoulders with the knotted fringe hanging free, is a formal piece — the kind given at weddings or worn to church. The finest examples, woven from silk-like artisela thread in a rippled ikat called jaspe, are considered heirlooms and passed between generations.",
+    steps: [
+      "The rebozo begins folded lengthwise, held loosely across the shoulders.",
+      "One end is drawn up and over the opposite shoulder, letting the fringe fall forward.",
+      "The remaining length is settled evenly across the back.",
+      "Both fringed ends are left hanging free at the front — the knotwork is meant to be seen."
+    ],
+    garment: {
+      name: "Mazahua-Otomí Dress",
+      blouseColor: '#F4EFE3',
+      skirtColor: '#33415C',
+      accentColor: '#8C3B3B',
+      description: "In the indigenous communities of the State of Mexico, the everyday dress is a white embroidered blouse over a full, brightly bordered skirt, tied with a woven belt (faja) and finished with a small apron. The rebozo tops it — carried folded over one shoulder, or knotted for work."
+    }
+  },
+  {
+    id: 'santa-maria',
+    name: 'Santa María del Río',
+    place: 'San Luis Potosí',
+    threadColor: '#8C3B3B',
+    swatches: ['#8C3B3B', '#EDEAE0', '#33415C'],
+    intro: "Woven so fine it can pass through a wedding ring, the Santa María del Río rebozo is prized for silk and near-transparent cotton weaves rather than bold color — the drama is in the weight of the cloth, not its pattern.",
+    context: "Because the cloth is so light, it's worn close — wrapped snugly around the shoulders and crossed at the chest rather than left loose. It's associated with elegance and is often a bride's rebozo, worn as a shawl over a formal dress rather than for daily carrying or covering.",
+    steps: [
+      "The rebozo is centered behind the shoulders, held taut rather than loose.",
+      "Both ends are crossed once at the chest, pulling the cloth close to the body.",
+      "Each end is brought around to the back and tied in a low, flat knot.",
+      "The fine weave lies smooth against the body, with no bulk at the shoulders."
+    ],
+    garment: {
+      name: "Huasteca Quechquémitl",
+      blouseColor: '#F4EFE3',
+      skirtColor: '#8C3B3B',
+      accentColor: '#33415C',
+      description: "In the Huasteca region of San Luis Potosí, women wear a quechquémitl — a diamond-shaped shoulder cape, hand-embroidered with birds and flowers — over a full skirt. It's a pre-Hispanic garment shape, older than the rebozo itself, still made without a single seamed sleeve."
+    }
+  },
+  {
+    id: 'michoacan',
+    name: 'Aranza',
+    place: 'Michoacán (Purépecha)',
+    threadColor: '#6E7B5C',
+    swatches: ['#6E7B5C', '#262A24', '#EDEAE0'],
+    intro: "In the Purépecha town of Aranza, rebozos are woven in bold indigo and black stripes on a foot loom, a style distinct from the pale ikat weaves further south — practical, sturdy cloth meant for daily use.",
+    context: "This rebozo does double duty: worn over the shoulders against the mountain cold, or knotted into a sling to carry a child or a bundle of firewood on the back. The wrap changes entirely depending on the task — decorative draping for the market, secure knotting for carrying.",
+    steps: [
+      "For carrying, the rebozo is laid diagonally across one shoulder and under the opposite arm.",
+      "The child or bundle rests against the back, held by the diagonal length.",
+      "Both ends are gathered at the front, at the hip.",
+      "They're twisted together once, then tied in a firm double knot to bear the weight."
+    ],
+    garment: {
+      name: "Purépecha Terno",
+      blouseColor: '#F4EFE3',
+      skirtColor: '#6E7B5C',
+      accentColor: '#262A24',
+      description: "The Purépecha terno pairs a blouse with a heavily pleated wool skirt (enagua), gathered by hand into hundreds of tiny folds at the waist, plus a delantal (apron) tied over the front. The rebozo is knotted at the waist when carrying, or worn loose over the shoulders for market days."
+    }
+  },
+  {
+    id: 'jalisco',
+    name: 'Jalisco',
+    place: 'Guadalajara region',
+    threadColor: '#262A24',
+    swatches: ['#262A24', '#8C3B3B', '#EDEAE0'],
+    intro: "Rebozos are less a Jalisco weaving tradition of their own and more a piece adopted into the region's charro and folklórico dress — often paired with a china poblana-style outfit, worn as a bold accent rather than a subtle daily wrap.",
+    context: "In folklórico performance, the rebozo becomes an extension of the dance itself — swept overhead, spun, or held taut between two hands as a prop, its ends weighted so it moves with the body rather than trailing behind it.",
+    steps: [
+      "The rebozo is held stretched between both hands, arms extended.",
+      "It's lifted overhead in a wide arc, following the turn of the dance.",
+      "Brought back down, one end settles over the shoulder.",
+      "The other end stays held in hand, ready for the next sweep."
+    ],
+    garment: {
+      name: "Traje de Charra",
+      blouseColor: '#F4EFE3',
+      skirtColor: '#262A24',
+      accentColor: '#8C3B3B',
+      description: "Jalisco's charra suit is built for movement — a fitted bodice and a dramatically wide, ribbon-trimmed skirt that flares out during horsemanship displays and folklórico dance. The rebozo is swept overhead as part of the choreography, more prop than practical wrap."
+    }
+  },
+  {
+    id: 'tamilnadu',
+    name: 'Madisar',
+    place: 'Tamil Nadu',
+    threadColor: '#8C3B3B',
+    swatches: ['#8C3B3B', '#EDEAE0', '#33415C'],
+    intro: "The madisar is a nine-yard saree, worn without a separate underskirt, wrapped and pleated so both legs move independently — a style built for temple ritual and everyday ease alike, still worn daily by many Iyer and Iyengar women, and by others for weddings and ceremonies.",
+    context: "Unlike the six-yard drapes common elsewhere in India, the extra length is used to divide the cloth front and back like a wide trouser, tucking in at the waist on both sides. Older weavers describe it as cloth doing the work a stitched garment would elsewhere — the pleating alone determines fit, drape, and how freely a person can sit, walk, or bend for temple rites.",
+    steps: [
+      "One end is tucked at the center back, and the length is drawn forward between the legs.",
+      "That forward length is tucked in at the front, dividing the cloth into two — one part for each leg.",
+      "The remaining cloth is wrapped around the waist once, pleated evenly by hand.",
+      "The pleats are tucked in at the front-center, so they fall straight down.",
+      "The final length is draped up over the left shoulder and pinned, covering the torso."
+    ],
+    garment: {
+      name: "Kanchipuram Silk Saree",
+      blouseColor: '#33415C',
+      skirtColor: '#8C3B3B',
+      accentColor: '#D4AF6A',
+      isDrape: true,
+      description: "The six-yard Kanchipuram silk saree is the more familiar counterpart to the madisar — worn with a separate underskirt and blouse, draped as a single wrap rather than divided for each leg. Woven in Kanchipuram with a thick zari (gold-thread) border and a contrast pallu, it's the saree most associated with South Indian weddings and temple visits."
+    }
+  }
+];
+
+let currentRegion = REGIONS.findIndex(r => r.id === 'tamilnadu');
+let currentStep = 0;
+let currentView = 'wrap';
+
+const regionsNav = document.getElementById('regions');
+const svg = document.getElementById('wrap-svg');
+const infoPanel = document.getElementById('info-panel');
+const stepDots = document.getElementById('step-dots');
+const stepCaption = document.getElementById('step-caption');
+const stepControls = document.getElementById('step-controls');
+const dressCaption = document.getElementById('dress-caption');
+const prevBtn = document.getElementById('prev-step');
+const nextBtn = document.getElementById('next-step');
+const btnViewWrap = document.getElementById('btn-view-wrap');
+const btnViewDress = document.getElementById('btn-view-dress');
+
+function buildNav() {
+  REGIONS.forEach((r, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'region-btn' + (i === currentRegion ? ' active' : '');
+    btn.textContent = r.name;
+    btn.addEventListener('click', () => selectRegion(i));
+    regionsNav.appendChild(btn);
+  });
+}
+
+function selectRegion(i) {
+  currentRegion = i;
+  currentStep = 0;
+  currentView = 'wrap';
+  document.querySelectorAll('.region-btn').forEach((b, idx) => {
+    b.classList.toggle('active', idx === i);
+  });
+  btnViewWrap.classList.add('active');
+  btnViewDress.classList.remove('active');
+  renderInfo();
+  renderSteps();
+}
+
+function setView(view) {
+  currentView = view;
+  btnViewWrap.classList.toggle('active', view === 'wrap');
+  btnViewDress.classList.toggle('active', view === 'dress');
+  renderSteps();
+}
+
+btnViewWrap.addEventListener('click', () => setView('wrap'));
+btnViewDress.addEventListener('click', () => setView('dress'));
+
+function renderInfo() {
+  const r = REGIONS[currentRegion];
+  infoPanel.innerHTML = `
+    <h2>${r.name}</h2>
+    <p class="place">${r.place}</p>
+    <p>${r.intro}</p>
+    <p>${r.context}</p>
+    <span class="label">Typical palette</span>
+    <div class="swatch-row">
+      ${r.swatches.map(c => `<div class="swatch" style="background:${c}"></div>`).join('')}
+    </div>
+  `;
+}
+
+// A simple front-facing croqui figure — head, neck, torso, arms, legs, feet —
+// drawn as clean line art beneath whatever cloth is layered on top.
+const FIGURE_LINE = '#B9B4A2';
+
+function drawFigure(target) {
+  const parts = [
+    // head
+    { tag: 'ellipse', attrs: { cx: 170, cy: 48, rx: 19, ry: 23 } },
+    // neck
+    { tag: 'path', attrs: { d: 'M159,68 C159,78 161,84 164,88 L176,88 C179,84 181,78 181,68' } },
+    // torso (shoulders to hips)
+    { tag: 'path', attrs: { d: 'M124,98 C119,128 119,163 129,194 C140,209 152,217 170,219 C188,217 200,209 211,194 C221,163 221,128 216,98 C203,90 188,86 170,86 C152,86 137,90 124,98 Z' } },
+    // left arm + hand
+    { tag: 'path', attrs: { d: 'M124,99 C107,116 100,146 102,175 C103,190 108,200 116,207' } },
+    { tag: 'ellipse', attrs: { cx: 117, cy: 210, rx: 6, ry: 8 } },
+    // right arm + hand
+    { tag: 'path', attrs: { d: 'M216,99 C233,116 240,146 238,175 C237,190 232,200 224,207' } },
+    { tag: 'ellipse', attrs: { cx: 223, cy: 210, rx: 6, ry: 8 } },
+    // left leg
+    { tag: 'path', attrs: { d: 'M149,218 C141,260 135,320 133,388 L150,388 C155,320 158,260 161,218 Z' } },
+    // right leg
+    { tag: 'path', attrs: { d: 'M191,218 C199,260 205,320 207,388 L190,388 C185,320 182,260 179,218 Z' } },
+    // feet
+    { tag: 'ellipse', attrs: { cx: 141, cy: 396, rx: 15, ry: 6 } },
+    { tag: 'ellipse', attrs: { cx: 199, cy: 396, rx: 15, ry: 6 } }
+  ];
+
+  parts.forEach(p => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', p.tag);
+    Object.entries(p.attrs).forEach(([k, v]) => el.setAttribute(k, v));
+    el.setAttribute('fill', 'none');
+    el.setAttribute('stroke', FIGURE_LINE);
+    el.setAttribute('stroke-width', '1.6');
+    el.setAttribute('stroke-linecap', 'round');
+    el.setAttribute('opacity', '0.7');
+    target.appendChild(el);
+  });
+}
+
+// Madisar draping stages, rendered as filled cloth shapes over the figure —
+// one group of shapes per step, drawn cumulatively.
+const MADISAR_STAGES = [
+  // Step 1 — tucked at back, drawn forward between the legs
+  [
+    { d: 'M164,220 C159,270 156,330 158,386 L182,386 C184,330 181,270 176,220 Z', fill: 'cochineal', opacity: 0.88 }
+  ],
+  // Step 2 — that length tucked at front, dividing the cloth for each leg
+  [
+    { d: 'M147,222 C139,268 135,328 134,386 L163,386 C165,328 163,268 160,222 Z', fill: 'cochineal', opacity: 0.82 },
+    { d: 'M180,222 C177,268 175,328 177,386 L206,386 C205,328 201,268 193,222 Z', fill: 'cochineal', opacity: 0.82 }
+  ],
+  // Step 3 — wrapped once around the waist, pleated by hand
+  [
+    { d: 'M118,196 C118,212 130,224 170,225 C210,224 222,212 222,196 C222,184 208,176 170,176 C132,176 118,184 118,196 Z', fill: 'cochineal', opacity: 0.9, pleats: true }
+  ],
+  // Step 4 — pleats tucked in at the front-center, falling straight down
+  [
+    { d: 'M158,198 L170,172 L182,198 Z', fill: 'indigo', opacity: 0.85 }
+  ],
+  // Step 5 — final length draped up over the left shoulder and pinned
+  [
+    { d: 'M122,100 C138,93 151,98 156,114 C147,150 137,182 129,206 C118,201 111,190 111,174 C111,144 115,120 122,100 Z', fill: 'cochineal', opacity: 0.9 }
+  ]
+];
+
+function drawMadisarCloth(step) {
+  for (let s = 0; s <= step; s++) {
+    const isNewest = s === step;
+    MADISAR_STAGES[s].forEach(shape => {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', shape.d);
+      const color = shape.fill === 'indigo' ? getComputedStyle(document.documentElement).getPropertyValue('--indigo').trim()
+                    : getComputedStyle(document.documentElement).getPropertyValue('--cochineal').trim();
+      path.setAttribute('fill', color);
+      path.setAttribute('opacity', isNewest ? '0' : String(shape.opacity));
+      path.setAttribute('stroke', color);
+      path.setAttribute('stroke-width', '0.5');
+      svg.appendChild(path);
+
+      if (isNewest) {
+        path.style.transition = 'opacity 0.6s ease';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            path.setAttribute('opacity', String(shape.opacity));
+          });
+        });
+      }
+
+      if (shape.pleats && isNewest === isNewest) {
+        // thin pleat lines across the waist band for texture
+        for (let i = 0; i < 6; i++) {
+          const x = 132 + i * 12;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', x);
+          line.setAttribute('y1', 182);
+          line.setAttribute('x2', x);
+          line.setAttribute('y2', 222);
+          line.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+          line.setAttribute('stroke-width', '1');
+          line.setAttribute('opacity', '0.5');
+          svg.appendChild(line);
+        }
+      }
+    });
+  }
+}
+
+function threadPathsFor(regionId, step) {
+  // Each region has up to 4 stylized thread paths representing the wrap at that step.
+  const paths = {
+    tenancingo: [
+      "M 90 150 C 140 150, 200 150, 250 150",
+      "M 90 150 C 130 190, 170 220, 210 260 C 220 300, 220 340, 215 380",
+      "M 250 150 C 210 190, 180 230, 175 280 C 175 320, 178 355, 182 385",
+      "M 175 280 C 165 300, 150 315, 130 320 M 182 385 C 195 395, 210 400, 225 398"
+    ],
+    'santa-maria': [
+      "M 95 150 C 140 148, 200 148, 245 150",
+      "M 95 150 C 130 175, 155 195, 170 220",
+      "M 245 150 C 210 175, 185 195, 170 220",
+      "M 170 220 C 175 260, 178 300, 176 340 C 172 350, 160 356, 148 355"
+    ],
+    michoacan: [
+      "M 95 140 C 150 155, 195 190, 225 230",
+      "M 225 230 C 235 260, 238 290, 235 320",
+      "M 225 230 C 205 250, 185 265, 165 275",
+      "M 165 275 C 175 285, 195 292, 215 292 M 215 292 C 220 300, 218 310, 210 316"
+    ],
+    jalisco: [
+      "M 80 120 C 130 60, 210 60, 260 120",
+      "M 80 120 C 110 160, 140 200, 165 230",
+      "M 260 120 C 235 150, 215 175, 200 200",
+      "M 165 230 C 168 260, 170 290, 168 320"
+    ]
+  };
+  const all = paths[regionId];
+  return all.slice(0, step + 1);
+}
+
+function drawGarment(region, target) {
+  const g = region.garment;
+
+  if (g.isDrape) {
+    // Kanchipuram-style saree: legs together (unlike madisar), pleated fan at front, pallu with contrast border
+    const underdrape = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    underdrape.setAttribute('d', 'M132,215 C123,270 118,330 118,386 L222,386 C222,330 217,270 208,215 C193,224 181,228 170,228 C159,228 147,224 132,215 Z');
+    underdrape.setAttribute('fill', g.skirtColor);
+    underdrape.setAttribute('opacity', '0.88');
+    target.appendChild(underdrape);
+
+    // pleat fan at center front
+    for (let i = -2; i <= 2; i++) {
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', 170);
+      line.setAttribute('y1', 220);
+      line.setAttribute('x2', 170 + i * 9);
+      line.setAttribute('y2', 384);
+      line.setAttribute('stroke', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+      line.setAttribute('stroke-width', '1');
+      line.setAttribute('opacity', '0.4');
+      target.appendChild(line);
+    }
+
+    // blouse
+    const blouse = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    blouse.setAttribute('d', 'M132,98 C127,122 128,148 134,168 C146,178 158,182 170,182 C182,182 194,178 206,168 C212,148 213,122 208,98 C197,91 184,87 170,87 C156,87 143,91 132,98 Z');
+    blouse.setAttribute('fill', g.blouseColor);
+    blouse.setAttribute('opacity', '0.9');
+    target.appendChild(blouse);
+
+    // pallu over left shoulder with contrast border
+    const pallu = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    pallu.setAttribute('d', 'M122,100 C138,93 151,98 156,114 C147,150 137,182 129,206 C118,201 111,190 111,174 C111,144 115,120 122,100 Z');
+    pallu.setAttribute('fill', g.skirtColor);
+    pallu.setAttribute('opacity', '0.92');
+    target.appendChild(pallu);
+
+    const border = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    border.setAttribute('d', 'M118,202 C126,180 135,150 143,118');
+    border.setAttribute('fill', 'none');
+    border.setAttribute('stroke', g.accentColor);
+    border.setAttribute('stroke-width', '3');
+    border.setAttribute('opacity', '0.85');
+    target.appendChild(border);
+    return;
+  }
+
+  // Generic blouse + wide skirt + apron, used for the four Mexican garments
+  const skirt = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  skirt.setAttribute('d', 'M118,215 C109,270 102,330 98,386 L242,386 C238,330 231,270 222,215 C205,225 190,230 170,230 C150,230 135,225 118,215 Z');
+  skirt.setAttribute('fill', g.skirtColor);
+  skirt.setAttribute('opacity', '0.88');
+  target.appendChild(skirt);
+
+  const blouse = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  blouse.setAttribute('d', 'M126,100 C121,128 121,163 130,192 C141,206 153,214 170,216 C187,214 199,206 210,192 C219,163 219,128 214,100 C201,92 186,88 170,88 C154,88 139,92 126,100 Z');
+  blouse.setAttribute('fill', g.blouseColor);
+  blouse.setAttribute('opacity', '0.92');
+  target.appendChild(blouse);
+
+  const apron = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  apron.setAttribute('d', 'M143,242 C137,282 135,322 138,362 L202,362 C205,322 203,282 197,242 C182,250 158,250 143,242 Z');
+  apron.setAttribute('fill', g.accentColor);
+  apron.setAttribute('opacity', '0.55');
+  target.appendChild(apron);
+
+  const trim = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  trim.setAttribute('d', 'M98,386 L242,386');
+  trim.setAttribute('stroke', g.accentColor);
+  trim.setAttribute('stroke-width', '4');
+  trim.setAttribute('opacity', '0.7');
+  target.appendChild(trim);
+}
+
+function renderSteps() {
+  const r = REGIONS[currentRegion];
+
+  if (currentView === 'dress') {
+    stepControls.style.display = 'none';
+    stepCaption.style.display = 'none';
+    dressCaption.style.display = 'block';
+
+    svg.innerHTML = '';
+    drawFigure(svg);
+    drawGarment(r, svg);
+
+    dressCaption.innerHTML = `
+      <p class="dress-name">${r.garment.name}</p>
+      <p>${r.garment.description}</p>
+    `;
+    return;
+  }
+
+  stepControls.style.display = 'flex';
+  stepCaption.style.display = 'block';
+  dressCaption.style.display = 'none';
+
+  const total = r.steps.length;
+
+  svg.innerHTML = '';
+  drawFigure(svg);
+
+  if (r.id === 'tamilnadu') {
+    drawMadisarCloth(currentStep);
+  } else {
+    const activePaths = threadPathsFor(r.id, currentStep);
+    activePaths.forEach((d, idx) => {
+      const isNewest = idx === activePaths.length - 1;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', r.threadColor);
+      path.setAttribute('stroke-width', isNewest ? '3' : '2.2');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('opacity', isNewest ? '1' : '0.5');
+      path.classList.add('thread-path');
+
+      const length = 800;
+      path.style.strokeDasharray = length;
+      path.style.strokeDashoffset = isNewest ? length : 0;
+      path.style.transition = 'stroke-dashoffset 0.7s ease';
+      svg.appendChild(path);
+
+      if (isNewest) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            path.style.strokeDashoffset = 0;
+          });
+        });
+      }
+    });
+  }
+
+  stepDots.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('span');
+    dot.className = 'dot' + (i === currentStep ? ' active' : '');
+    stepDots.appendChild(dot);
+  }
+
+  stepCaption.textContent = `Step ${currentStep + 1} of ${total} — ${r.steps[currentStep]}`;
+  prevBtn.disabled = currentStep === 0;
+  nextBtn.disabled = currentStep === total - 1;
+}
+
+prevBtn.addEventListener('click', () => {
+  if (currentStep > 0) {
+    currentStep--;
+    renderSteps();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  const total = REGIONS[currentRegion].steps.length;
+  if (currentStep < total - 1) {
+    currentStep++;
+    renderSteps();
+  }
+});
+
+buildNav();
+renderInfo();
+renderSteps();
+</script>
+</body>
+</html>
